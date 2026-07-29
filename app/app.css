@@ -211,6 +211,23 @@ body {
   line-height: 1.8 !important;
 }
 
+/* Keep long URLs and code fully visible and editable. */
+.cm-editor,
+.cm-scroller,
+.cm-content,
+.cm-line {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.cm-content,
+.cm-line {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  text-overflow: clip !important;
+}
+
 .cm-lineNumbers {
   background-color: var(--color-background) !important;
   line-height: 1.8 !important;
