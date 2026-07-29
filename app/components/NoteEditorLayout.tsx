@@ -41,7 +41,10 @@ export function NoteEditorLayout({
 }: NoteEditorLayoutProps) {
     const [content, setContent] = useState(initialContent);
     const [isPublic, setIsPublic] = useState(initialIsPublic);
+
+    // 服务端渲染时默认按桌面端处理；客户端挂载后立即根据屏幕宽度更新。
     const [isMobile, setIsMobile] = useState(false);
+
     const resolvedTheme = useResolvedTheme();
     const submit = useSubmit();
     const { showSnackbar } = useUI();
@@ -62,6 +65,7 @@ export function NoteEditorLayout({
 
         updateMobileState();
         mediaQuery.addEventListener("change", updateMobileState);
+
         return () => {
             mediaQuery.removeEventListener("change", updateMobileState);
         };
@@ -115,6 +119,7 @@ export function NoteEditorLayout({
                     </div>
                 }
             />
+
             <main className="flex-1 w-full pb-4 md:pb-6 max-w-7xl mx-auto overflow-hidden flex flex-col">
                 <Form
                     method="post"
@@ -128,7 +133,9 @@ export function NoteEditorLayout({
                         errors={errors}
                         onIsPublicChange={setIsPublic}
                     />
+
                     <input type="hidden" name="content" value={content} />
+
                     <div className="flex-1 min-h-0 overflow-hidden px-4 py-1.5 mb-2 flex flex-col">
                         <div
                             className={cn(
@@ -144,12 +151,16 @@ export function NoteEditorLayout({
                                 language="en-US"
                                 codeTheme="github"
                                 previewTheme="github"
+                                // 移动端关闭预览后，MdEditor 会使用原生单栏源码布局。
+                                // 不再设置 inputBoxWidth，避免和组件内部布局发生冲突。
                                 preview={!isMobile}
+                                // 移动端隐藏工具栏中的预览按钮，避免误切回双栏。
                                 toolbarsExclude={isMobile ? ["preview"] : []}
                                 className="edge-note-editor h-full bg-background!"
                                 style={{ height: "100%" }}
                             />
                         </div>
+
                         {errors?.content && (
                             <p className="mt-2 text-xs text-error ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
                                 {errors.content}
