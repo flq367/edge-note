@@ -668,3 +668,44 @@ textarea[aria-label="Note content"] {
 .edge-note-editor .cm-foldPlaceholder {
   display: none !important;
 }
+
+/* Keep Markdown list markers visible inside MdEditor live preview.
+   Tailwind preflight removes the browser's default ul/ol markers, while
+   saved-note pages restore them through the .prose rules above. */
+.md-editor-preview ul,
+.md-editor-preview-wrapper ul {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  padding-left: 1.75rem !important;
+  margin: 0.75rem 0 !important;
+}
+
+.md-editor-preview ol,
+.md-editor-preview-wrapper ol {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+  padding-left: 1.75rem !important;
+  margin: 0.75rem 0 !important;
+}
+
+.md-editor-preview ul ul,
+.md-editor-preview-wrapper ul ul {
+  list-style-type: circle !important;
+}
+
+.md-editor-preview ul ul ul,
+.md-editor-preview-wrapper ul ul ul {
+  list-style-type: square !important;
+}
+
+.md-editor-preview li,
+.md-editor-preview-wrapper li {
+  display: list-item !important;
+  margin: 0.25rem 0 !important;
+}
+
+/* Task-list items use checkboxes instead of normal list markers. */
+.md-editor-preview .task-list-item,
+.md-editor-preview-wrapper .task-list-item {
+  list-style-type: none !important;
+}
