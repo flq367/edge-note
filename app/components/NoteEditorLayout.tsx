@@ -42,9 +42,6 @@ export function NoteEditorLayout({
     const [content, setContent] = useState(initialContent);
     const [isPublic, setIsPublic] = useState(initialIsPublic);
 
-    // 服务端渲染时默认按桌面端处理；客户端挂载后立即根据屏幕宽度更新。
-    const [isMobile, setIsMobile] = useState(false);
-
     const resolvedTheme = useResolvedTheme();
     const submit = useSubmit();
     const { showSnackbar } = useUI();
@@ -55,21 +52,6 @@ export function NoteEditorLayout({
             submit(form);
         }
     };
-
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(max-width: 640px)");
-
-        const updateMobileState = () => {
-            setIsMobile(mediaQuery.matches);
-        };
-
-        updateMobileState();
-        mediaQuery.addEventListener("change", updateMobileState);
-
-        return () => {
-            mediaQuery.removeEventListener("change", updateMobileState);
-        };
-    }, []);
 
     useEffect(() => {
         if (errors?.global) {
@@ -151,11 +133,6 @@ export function NoteEditorLayout({
                                 language="en-US"
                                 codeTheme="github"
                                 previewTheme="github"
-                                // 移动端关闭预览后，MdEditor 会使用原生单栏源码布局。
-                                // 不再设置 inputBoxWidth，避免和组件内部布局发生冲突。
-                                preview={!isMobile}
-                                // 移动端隐藏工具栏中的预览按钮，避免误切回双栏。
-                                toolbarsExclude={isMobile ? ["preview"] : []}
                                 className="edge-note-editor h-full bg-background!"
                                 style={{ height: "100%" }}
                             />
