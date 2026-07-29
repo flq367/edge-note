@@ -146,7 +146,7 @@ export const NoteCard = React.memo(function NoteCard({
             type="button"
             id={`note-card-${note.id}`}
             className={cn(
-                "group relative flex flex-col p-4 h-44 transition-all duration-300 rounded-2xl cursor-pointer overflow-hidden touch-manipulation select-none touch-callout-none text-left",
+                "group relative flex flex-col p-3 h-36 sm:p-4 sm:h-44 transition-all duration-300 rounded-2xl cursor-pointer overflow-hidden touch-manipulation select-none touch-callout-none text-left",
                 "note-card transition-shadow duration-200",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                 selected
@@ -182,7 +182,7 @@ export const NoteCard = React.memo(function NoteCard({
                 {note.excerpt || "No additional text"}
             </p>
 
-            <div className="mt-auto flex items-center justify-between pt-3">
+            <div className="mt-auto flex items-center justify-between pt-2 sm:pt-3">
                 <span className={cn("text-xs font-medium px-2.5 py-1 rounded-lg tracking-wide", selected ? "bg-primary/10 text-primary" : "bg-surface-container text-on-surface-variant")}>
                     {formattedDate}
                 </span>
