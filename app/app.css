@@ -709,3 +709,69 @@ textarea[aria-label="Note content"] {
 .md-editor-preview-wrapper .task-list-item {
   list-style-type: none !important;
 }
+
+
+/* =========================================================
+   Mobile UI corrections
+   ========================================================= */
+
+/* On phones, use the entire editor width for Markdown source.
+   Desktop keeps the normal split editor + live preview layout. */
+@media (max-width: 640px) {
+  .edge-note-editor .md-editor-preview-wrapper,
+  .edge-note-editor .md-editor-resize-operate,
+  .edge-note-editor .md-editor-resize {
+    display: none !important;
+  }
+
+  .edge-note-editor .md-editor-content {
+    display: block !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .edge-note-editor .md-editor-input-wrapper {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    border-right: 0 !important;
+  }
+
+  .edge-note-editor .cm-editor,
+  .edge-note-editor .cm-scroller {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Rendered Markdown code blocks should keep code on one logical line and
+   use horizontal scrolling, including touch dragging on mobile. */
+@media (max-width: 640px) {
+  .md-editor-preview .md-editor-code > pre,
+  .md-editor-preview-wrapper .md-editor-code > pre,
+  .prose .md-editor-code > pre,
+  .prose pre {
+    display: block !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    padding-bottom: 0.5rem !important;
+    scroll-padding-bottom: 0.5rem;
+  }
+
+  .md-editor-preview .md-editor-code code,
+  .md-editor-preview-wrapper .md-editor-code code,
+  .prose .md-editor-code code,
+  .prose pre > code {
+    display: block !important;
+    width: max-content !important;
+    min-width: 100% !important;
+    max-width: none !important;
+    white-space: pre !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    text-overflow: clip !important;
+  }
+}

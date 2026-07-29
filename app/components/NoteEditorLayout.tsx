@@ -135,7 +135,7 @@ export function NoteEditorLayout({
                                 codeTheme="github"
                                 previewTheme="github"
                                 preview
-                                className="h-full bg-background!"
+                                className="edge-note-editor h-full bg-background!"
                                 style={{ height: "100%" }}
                             />
                         </div>
