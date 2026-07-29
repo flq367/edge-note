@@ -1,21 +1,20 @@
 import { sql } from "drizzle-orm";
 import { Plus, Trash2 } from "lucide-react";
-import { getNotesList } from "../services/notes.server";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useActionData, useFetcher, useSearchParams, useSubmit } from "react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useFetcher, useSearchParams, useSubmit } from "react-router";
+import { APP_CONFIG } from "~/config";
 import { HomeHeader } from "../components/HomeHeader";
+import { type Note } from "../components/NoteCard";
 import { NoteList } from "../components/NoteList";
 import { SelectionToolbar } from "../components/SelectionToolbar";
+import { Button } from "../components/ui/Button";
 import { useUI } from "../components/ui/UIProvider";
 import { notes } from "../drizzle/schema";
 import { useSelectionMode } from "../hooks/useSelection";
 import { getDB } from "../services/db.server";
+import { getNotesList } from "../services/notes.server";
 import { requireAuth } from "../services/session.server";
 import type { Route } from "./+types/home";
-import type { Note } from "../components/NoteCard";
-import { Link } from "react-router";
-import { Button } from "../components/ui/Button";
-import { APP_CONFIG } from "~/config";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -34,7 +33,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const limit = 24;
 
   const notesResult = await getNotesList(db, { q, privacy, offset, limit });
-
   return {
     notes: notesResult.notes,
     totalNotes: notesResult.totalNotes,
@@ -50,17 +48,34 @@ export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const db = getDB(context.cloudflare.env);
+  const ids = formData.getAll("id");
+  const numberIds = ids
+    .map(id => parseInt(id as string, 10))
+    .filter(id => !Number.isNaN(id));
 
   if (intent === "delete_batch") {
-    const ids = formData.getAll("id");
-    const numberIds = ids.map(id => parseInt(id as string, 10)).filter(id => !isNaN(id));
-
     if (numberIds.length > 0) {
       await db.delete(notes).where(
         sql`id IN (SELECT value FROM json_each(${JSON.stringify(numberIds)}))`
       );
     }
-    return { success: true, deletedCount: numberIds.length };
+    return { success: true, operation: "delete", affectedCount: numberIds.length };
+  }
+
+  if (intent === "pin_batch" || intent === "unpin_batch") {
+    if (numberIds.length > 0) {
+      await db
+        .update(notes)
+        .set({ isPinned: intent === "pin_batch" })
+        .where(
+          sql`id IN (SELECT value FROM json_each(${JSON.stringify(numberIds)}))`
+        );
+    }
+    return {
+      success: true,
+      operation: intent === "pin_batch" ? "pin" : "unpin",
+      affectedCount: numberIds.length
+    };
   }
 
   return { error: "Invalid intent" };
@@ -68,7 +83,11 @@ export async function action({ request, context }: Route.ActionArgs) {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   const submit = useSubmit();
-  const fetcher = useFetcher<any>();
+  const fetcher = useFetcher<{
+    success?: boolean;
+    operation?: "delete" | "pin" | "unpin";
+    affectedCount?: number;
+  }>();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [notesList, setNotesList] = useState<Note[]>(loaderData.notes);
@@ -99,6 +118,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   const { isSelectionMode, selectedIds, clearSelection, selectAll } = selection;
 
+  const allSelectedPinned = useMemo(() => {
+    if (selectedIds.size === 0) return false;
+    return notesList
+      .filter(note => selectedIds.has(note.id.toString()))
+      .every(note => note.isPinned);
+  }, [notesList, selectedIds]);
+
   const [q, setQ] = useState(loaderData.q || "");
   const [privacy, setPrivacy] = useState(loaderData.privacy);
 
@@ -124,14 +150,19 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   }, [privacy, submit, loaderData.privacy]);
 
   const { showSnackbar, showModal } = useUI();
-  const actionData = useActionData<{ success?: boolean }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if (actionData?.success) {
+    if (!fetcher.data?.success) return;
+
+    if (fetcher.data.operation === "pin") {
+      showSnackbar("Notes pinned successfully");
+    } else if (fetcher.data.operation === "unpin") {
+      showSnackbar("Notes unpinned successfully");
+    } else if (fetcher.data.operation === "delete") {
       showSnackbar("Notes deleted successfully");
     }
-  }, [actionData, showSnackbar]);
+  }, [fetcher.data, showSnackbar]);
 
   useEffect(() => {
     if (searchParams.has("deleted")) {
@@ -143,6 +174,31 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       }, { replace: true });
     }
   }, [searchParams, showSnackbar, setSearchParams]);
+
+  const handleTogglePin = () => {
+    if (selectedIds.size === 0) return;
+
+    const shouldPin = !allSelectedPinned;
+    const formData = new FormData();
+    formData.append("intent", shouldPin ? "pin_batch" : "unpin_batch");
+    selectedIds.forEach(id => formData.append("id", id));
+
+    const selectedIdSet = new Set(selectedIds);
+    setNotesList(prev => prev
+      .map(note => selectedIdSet.has(note.id.toString())
+        ? { ...note, isPinned: shouldPin }
+        : note)
+      .sort((a, b) => {
+        if (a.isPinned !== b.isPinned) {
+          return Number(b.isPinned) - Number(a.isPinned);
+        }
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      })
+    );
+
+    fetcher.submit(formData, { method: "post" });
+    clearSelection();
+  };
 
   const handleDelete = () => {
     showModal({
@@ -162,7 +218,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-on-background overflow-hidden" style={{ viewTransitionName: 'home-page' }}>
+    <div className="flex flex-col h-screen bg-background text-on-background overflow-hidden" style={{ viewTransitionName: "home-page" }}>
       <div className="relative h-18 md:h-16 shrink-0 z-50">
         <HomeHeader
           isVisible={!isSelectionMode}
@@ -171,16 +227,16 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           onSearchChange={(e) => setQ(e.target.value)}
           onSearchClear={() => setQ("")}
         />
-
         <SelectionToolbar
           isVisible={isSelectionMode}
           selectedCount={selectedIds.size}
+          allSelectedPinned={allSelectedPinned}
           onClear={clearSelection}
           onSelectAll={selectAll}
+          onTogglePin={handleTogglePin}
           onDelete={handleDelete}
         />
       </div>
-
       <div className="flex-1 w-full overflow-hidden flex flex-col relative">
         <NoteList
           notes={notesList}
@@ -200,10 +256,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           />
         </NoteList>
       </div>
-
       {!isSelectionMode && (
         <Link to="/new" className="fixed bottom-7 right-7 z-40 md:hidden">
-          <Button variant="filled" className="h-16 w-16 rounded-2xl bg-primary-container text-on-primary-container shadow-md flex items-center justify-center p-0" icon={<Plus className="w-8 h-8" />} />
+          <Button
+            variant="filled"
+            className="h-16 w-16 rounded-2xl bg-primary-container text-on-primary-container shadow-md flex items-center justify-center p-0"
+            icon={<Plus className="w-8 h-8" />}
+          />
         </Link>
       )}
     </div>

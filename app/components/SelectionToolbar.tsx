@@ -1,20 +1,24 @@
-import { Trash2, X } from "lucide-react";
+import { Pin, PinOff, Trash2, X } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Button } from "./ui/Button";
 
 interface SelectionToolbarProps {
     isVisible: boolean;
     selectedCount: number;
+    allSelectedPinned: boolean;
     onClear: () => void;
     onSelectAll: () => void;
+    onTogglePin: () => void;
     onDelete: () => void;
 }
 
 export function SelectionToolbar({
     isVisible,
     selectedCount,
+    allSelectedPinned,
     onClear,
     onSelectAll,
+    onTogglePin,
     onDelete
 }: SelectionToolbarProps) {
     return (
@@ -31,23 +35,32 @@ export function SelectionToolbar({
                         aria-label="Cancel selection"
                         icon={<X className="w-6 h-6" />}
                     />
-
                     <div className="flex flex-col">
                         <span className="text-lg font-medium text-on-surface">
                             {selectedCount} selected
                         </span>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                     <Button
                         tabIndex={isVisible ? 0 : -1}
                         variant="text"
                         onClick={onSelectAll}
-                        className="bg-transparent"
+                        className="bg-transparent px-2 sm:px-4"
                     >
                         Select All
                     </Button>
+                    <Button
+                        tabIndex={isVisible ? 0 : -1}
+                        variant="icon"
+                        onClick={onTogglePin}
+                        disabled={selectedCount === 0}
+                        title={allSelectedPinned ? "Unpin selected" : "Pin selected"}
+                        aria-label={allSelectedPinned ? "Unpin selected notes" : "Pin selected notes"}
+                        icon={allSelectedPinned
+                            ? <PinOff className="w-6 h-6" />
+                            : <Pin className="w-6 h-6" />}
+                    />
                     <Button
                         tabIndex={isVisible ? 0 : -1}
                         variant="icon"

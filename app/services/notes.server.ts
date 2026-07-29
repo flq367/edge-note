@@ -22,11 +22,11 @@ export async function getNotesList(
       createdAt: notes.createdAt,
       slug: notes.slug,
       isPublic: notes.isPublic,
+      isPinned: notes.isPinned,
       excerpt: sql<string>`SUBSTR(${notes.content}, 1, 200)`,
     })
     .from(notes)
     .$dynamic();
-
   let countQuery = db.select({ value: count() }).from(notes).$dynamic();
 
   const conditions = [];
@@ -48,20 +48,21 @@ export async function getNotesList(
   }
 
   if (conditions.length > 0) {
-    const combined =
-      conditions.length > 1 ? and(...conditions) : conditions[0];
+    const combined = conditions.length > 1 ? and(...conditions) : conditions[0];
     query = query.where(combined!);
     countQuery = countQuery.where(combined!);
   }
 
   const [resultNotes, totalCountResult] = await Promise.all([
-    query.orderBy(desc(notes.createdAt)).limit(limit).offset(offset),
+    query
+      .orderBy(desc(notes.isPinned), desc(notes.createdAt))
+      .limit(limit)
+      .offset(offset),
     countQuery,
   ]);
 
   const totalNotes = totalCountResult[0]?.value || 0;
   const hasMore = offset + resultNotes.length < totalNotes;
-
   const formattedNotes = resultNotes.map((n: any) => ({
     id: n.id,
     title: n.title || "Untitled",
@@ -71,6 +72,7 @@ export async function getNotesList(
       : new Date().toISOString(),
     slug: n.slug,
     isPublic: !!n.isPublic,
+    isPinned: !!n.isPinned,
   }));
 
   return {
