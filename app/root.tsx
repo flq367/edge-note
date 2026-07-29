@@ -10,8 +10,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { config, XSSPlugin } from "md-editor-rt";
-import { lineNumbers } from '@codemirror/view';
-
+import { EditorView, lineNumbers } from '@codemirror/view';
 config({
   markdownItPlugins(plugins) {
     return [
@@ -29,11 +28,14 @@ config({
       {
         type: 'lineNumbers',
         extension: lineNumbers()
+      },
+      {
+        type: 'lineWrapping',
+        extension: EditorView.lineWrapping
       }
     ];
   }
 });
-
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -47,7 +49,6 @@ export const links: Route.LinksFunction = () => [
   },
   { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
 ];
-
 import { ThemeProvider } from "./components/theme-provider";
 import { UIProvider } from "./components/ui/UIProvider";
 import { useRouteLoaderData } from "react-router";
@@ -58,11 +59,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   const theme = (themeMatch?.[1] as "light" | "dark" | "system") || "system";
   return { theme };
 }
-
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
   const initialTheme = data?.theme || "system";
-
   const themeScript = `
     (function() {
       try {
@@ -75,7 +74,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           var local = localStorage.getItem(storageKey);
           if (local) theme = local;
         }
-
         function applyTheme(t) {
           var root = document.documentElement;
           if (t === 'dark') {
@@ -90,12 +88,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             }
           }
         }
-        
+
         applyTheme(theme);
       } catch (e) {}
     })();
   `;
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -117,7 +114,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
-
 export default function App() {
   return <Outlet />;
 }
@@ -126,7 +122,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
-
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
     details =
@@ -137,7 +132,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     details = error.message;
     stack = error.stack;
   }
-
   return (
     <main className="pt-16 p-4 container mx-auto">
       <h1>{message}</h1>
