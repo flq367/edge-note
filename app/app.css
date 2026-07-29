@@ -728,8 +728,8 @@ textarea[aria-label="Note content"] {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    padding-bottom: 0.5rem !important;
-    scroll-padding-bottom: 0.5rem;
+    padding-bottom: 0.05rem !important;
+    scroll-padding-bottom: 0.05rem;
   }
 
   .md-editor-preview .md-editor-code code,
