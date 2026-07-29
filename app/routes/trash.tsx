@@ -106,9 +106,9 @@ export default function Trash({ loaderData }: Route.ComponentProps) {
 
   const handleDeleteForever = (id: number, title: string) => {
     showModal({
-      title: "Delete forever?",
+      title: "Delete?",
       description: `“${title}” will be permanently deleted. This action cannot be undone.`,
-      confirmText: "Delete forever",
+      confirmText: "Delete",
       isDestructive: true,
       icon: <Trash2 className="w-6 h-6" />,
       onConfirm: () => submitAction(id, "delete_forever"),
@@ -179,7 +179,7 @@ export default function Trash({ loaderData }: Route.ComponentProps) {
                     onClick={() => handleDeleteForever(note.id, note.title)}
                     icon={<Trash2 className="w-4 h-4" />}
                   >
-                    Delete forever
+                    Delete
                   </Button>
                 </div>
               </article>
