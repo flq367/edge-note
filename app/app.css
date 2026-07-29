@@ -715,35 +715,6 @@ textarea[aria-label="Note content"] {
    Mobile UI corrections
    ========================================================= */
 
-/* On phones, use the entire editor width for Markdown source.
-   Desktop keeps the normal split editor + live preview layout. */
-@media (max-width: 640px) {
-  .edge-note-editor .md-editor-preview-wrapper,
-  .edge-note-editor .md-editor-resize-operate,
-  .edge-note-editor .md-editor-resize {
-    display: none !important;
-  }
-
-  .edge-note-editor .md-editor-content {
-    display: block !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
-
-  .edge-note-editor .md-editor-input-wrapper {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: 1 1 100% !important;
-    border-right: 0 !important;
-  }
-
-  .edge-note-editor .cm-editor,
-  .edge-note-editor .cm-scroller {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-}
-
 /* Rendered Markdown code blocks should keep code on one logical line and
    use horizontal scrolling, including touch dragging on mobile. */
 @media (max-width: 640px) {
@@ -757,8 +728,8 @@ textarea[aria-label="Note content"] {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    padding-bottom: 0.2rem !important;
-    scroll-padding-bottom: 0.2rem;
+    padding-bottom: 0.5rem !important;
+    scroll-padding-bottom: 0.5rem;
   }
 
   .md-editor-preview .md-editor-code code,

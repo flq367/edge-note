@@ -41,6 +41,7 @@ export function NoteEditorLayout({
 }: NoteEditorLayoutProps) {
     const [content, setContent] = useState(initialContent);
     const [isPublic, setIsPublic] = useState(initialIsPublic);
+    const [isMobile, setIsMobile] = useState(false);
     const resolvedTheme = useResolvedTheme();
     const submit = useSubmit();
     const { showSnackbar } = useUI();
@@ -51,6 +52,21 @@ export function NoteEditorLayout({
             submit(form);
         }
     };
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 640px)");
+
+        const updateMobileState = () => {
+            setIsMobile(mediaQuery.matches);
+        };
+
+        updateMobileState();
+        mediaQuery.addEventListener("change", updateMobileState);
+
+        return () => {
+            mediaQuery.removeEventListener("change", updateMobileState);
+        };
+    }, []);
 
     useEffect(() => {
         if (errors?.global) {
@@ -134,7 +150,7 @@ export function NoteEditorLayout({
                                 language="en-US"
                                 codeTheme="github"
                                 previewTheme="github"
-                                preview
+                                preview={!isMobile}
                                 className="edge-note-editor h-full bg-background!"
                                 style={{ height: "100%" }}
                             />
