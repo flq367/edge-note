@@ -30,6 +30,8 @@ export const NoteCard = React.memo(function NoteCard({
 }: NoteCardProps) {
     const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLongPressing = useRef(false);
+    const suppressClickUntil = useRef(0);
+    const lastTouchAt = useRef(0);
     const touchStartPos = useRef<{ x: number, y: number } | null>(null);
 
     const formattedDate = useMemo(() => formatDate(note.date), [note.date]);
@@ -41,6 +43,7 @@ export const NoteCard = React.memo(function NoteCard({
     }, []);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        lastTouchAt.current = Date.now();
         isLongPressing.current = false;
         const touch = e.touches[0];
         touchStartPos.current = { x: touch.clientX, y: touch.clientY };
@@ -48,6 +51,7 @@ export const NoteCard = React.memo(function NoteCard({
         if (longPressTimer.current) clearTimeout(longPressTimer.current);
         longPressTimer.current = setTimeout(() => {
             isLongPressing.current = true;
+            suppressClickUntil.current = Date.now() + 900;
             if (typeof window !== "undefined" && window.navigator?.vibrate) {
                 window.navigator.vibrate(40);
             }
@@ -56,6 +60,7 @@ export const NoteCard = React.memo(function NoteCard({
     }, [note, onLongPress]);
 
     const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        lastTouchAt.current = Date.now();
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
             longPressTimer.current = null;
@@ -92,11 +97,17 @@ export const NoteCard = React.memo(function NoteCard({
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (e.button !== 0) return;
+
+        // Mobile browsers may emit synthetic mouse events immediately after touch.
+        // Ignoring them prevents a completed long press from being toggled off again.
+        if (Date.now() - lastTouchAt.current < 1000) return;
+
         isLongPressing.current = false;
 
         if (longPressTimer.current) clearTimeout(longPressTimer.current);
         longPressTimer.current = setTimeout(() => {
             isLongPressing.current = true;
+            suppressClickUntil.current = Date.now() + 900;
             onLongPress(note);
         }, 500);
     }, [note, onLongPress]);
@@ -117,7 +128,7 @@ export const NoteCard = React.memo(function NoteCard({
     }, []);
 
     const handleClick = useCallback((e: React.MouseEvent) => {
-        if (isLongPressing.current) {
+        if (Date.now() < suppressClickUntil.current || isLongPressing.current) {
             e.preventDefault();
             e.stopPropagation();
             isLongPressing.current = false;

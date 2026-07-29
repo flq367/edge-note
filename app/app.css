@@ -590,3 +590,24 @@ body {
 .prose .md-editor-admonition-attention>.md-editor-admonition-title {
   color: #632dc1 !important;
 }
+
+/* Mobile fixes: keep code-block scrollbars clear of the final code line. */
+@media (max-width: 640px) {
+  .md-editor-preview .md-editor-code > pre,
+  .md-editor-preview-wrapper .md-editor-code > pre,
+  .prose .md-editor-code > pre,
+  .prose pre {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1.5rem !important;
+    scroll-padding-bottom: 1.5rem;
+  }
+
+  .md-editor-preview .md-editor-code code,
+  .md-editor-preview-wrapper .md-editor-code code,
+  .prose .md-editor-code code,
+  .prose pre > code {
+    display: block;
+    min-width: max-content;
+  }
+}
