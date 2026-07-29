@@ -1,8 +1,7 @@
-import { EditorView } from "@codemirror/view";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
-import { MdEditor } from "md-editor-rt";
+import { ArrowLeft, Eye, Loader2, Pencil, Save } from "lucide-react";
+import { MdPreview } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Link, useSubmit } from "react-router";
 import { useResolvedTheme } from "../hooks/useResolvedTheme";
 import { cn } from "../lib/utils";
@@ -13,150 +12,205 @@ import { Button } from "./ui/Button";
 import { useUI } from "./ui/UIProvider";
 
 interface NoteEditorLayoutProps {
-  title: string;
-  backLink: string;
-  formId: string;
-  isSubmitting: boolean;
-  initialTitle?: string;
-  initialSlug?: string;
-  initialContent?: string;
-  initialIsPublic?: boolean;
-  errors?: {
-    title?: string;
-    slug?: string;
-    content?: string;
-    global?: string;
-  };
+    title: string;
+    backLink: string;
+    formId: string;
+    isSubmitting: boolean;
+    initialTitle?: string;
+    initialSlug?: string;
+    initialContent?: string;
+    initialIsPublic?: boolean;
+    errors?: {
+        title?: string;
+        slug?: string;
+        content?: string;
+        global?: string;
+    };
 }
 
 export function NoteEditorLayout({
-  title,
-  backLink,
-  formId,
-  isSubmitting,
-  initialTitle = "",
-  initialSlug = "",
-  initialContent = "",
-  initialIsPublic = false,
-  errors,
+    title,
+    backLink,
+    formId,
+    isSubmitting,
+    initialTitle = "",
+    initialSlug = "",
+    initialContent = "",
+    initialIsPublic = false,
+    errors,
 }: NoteEditorLayoutProps) {
-  const [content, setContent] = useState(initialContent);
-  const [isPublic, setIsPublic] = useState(initialIsPublic);
-  const [isPreviewEnabled, setIsPreviewEnabled] = useState(true);
-  const resolvedTheme = useResolvedTheme();
-  const submit = useSubmit();
+    const [content, setContent] = useState(initialContent);
+    const [isPublic, setIsPublic] = useState(initialIsPublic);
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const resolvedTheme = useResolvedTheme();
+    const submit = useSubmit();
+    const { showSnackbar } = useUI();
 
-  // CodeMirror's official line-wrapping extension. This is the important fix:
-  // long URLs and long code are rendered in full instead of being replaced by
-  // a large virtual gap/ellipsis on narrow mobile screens.
-  const codeMirrorExtensions = useMemo(() => [EditorView.lineWrapping], []);
-
-  const handleSave = () => {
-    const form = document.getElementById(formId) as HTMLFormElement;
-    if (form) {
-      submit(form);
-    }
-  };
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsPreviewEnabled(window.innerWidth >= 768);
+    const handleSave = () => {
+        const form = document.getElementById(formId) as HTMLFormElement | null;
+        if (form) {
+            submit(form);
+        }
     };
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const { showSnackbar } = useUI();
-
-  useEffect(() => {
-    if (errors?.global) {
-      showSnackbar(errors.global);
-    }
-  }, [errors?.global, showSnackbar]);
-
-  return (
-    <div className="flex flex-col h-screen bg-background">
-      <AppBar
-        className="bg-background/80 backdrop-blur-md px-4"
-        title={title}
-        startAction={
-          <Link to={backLink} viewTransition tabIndex={-1}>
-            <Button variant="icon" icon={<ArrowLeft className="w-6 h-6" />} />
-          </Link>
+    const handleEditorKeyDown = (
+        event: React.KeyboardEvent<HTMLTextAreaElement>
+    ) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+            event.preventDefault();
+            handleSave();
         }
-        endAction={
-          <div className="flex items-center gap-2 pe-2">
-            <Link to={backLink} className="hidden md:block" viewTransition tabIndex={-1}>
-              <Button variant="text">Cancel</Button>
-            </Link>
-            <Button
-              form={formId}
-              type="submit"
-              disabled={isSubmitting}
-              variant="filled"
-              icon={
-                isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )
-              }
-            >
-              Save
-            </Button>
-            <ThemeToggle />
-          </div>
+
+        if (event.key === "Tab") {
+            event.preventDefault();
+
+            const textarea = event.currentTarget;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const nextContent =
+                content.slice(0, start) + "    " + content.slice(end);
+
+            setContent(nextContent);
+
+            requestAnimationFrame(() => {
+                textarea.selectionStart = start + 4;
+                textarea.selectionEnd = start + 4;
+            });
         }
-      />
+    };
 
-      <main className="flex-1 w-full pb-4 md:pb-6 max-w-7xl mx-auto overflow-hidden flex flex-col">
-        <Form method="post" id={formId} className="flex flex-col gap-6 h-full">
-          <NoteMetadataEditor
-            title={initialTitle}
-            isPublic={isPublic}
-            slug={initialSlug}
-            errors={errors}
-            onIsPublicChange={setIsPublic}
-          />
+    useEffect(() => {
+        if (errors?.global) {
+            showSnackbar(errors.global);
+        }
+    }, [errors?.global, showSnackbar]);
 
-          <div className="flex-1 min-h-0 overflow-hidden px-4 py-1.5 mb-2 flex flex-col">
-            <input type="hidden" name="content" value={content} />
+    return (
+        <div className="flex flex-col h-screen bg-background">
+            <AppBar
+                className="bg-background/80 backdrop-blur-md px-4"
+                title={title}
+                startAction={
+                    <Link to={backLink} viewTransition tabIndex={-1}>
+                        <Button
+                            variant="icon"
+                            icon={<ArrowLeft className="w-6 h-6" />}
+                        />
+                    </Link>
+                }
+                endAction={
+                    <div className="flex items-center gap-2 pe-2">
+                        <Button
+                            type="button"
+                            variant="icon"
+                            title={isPreviewMode ? "Edit" : "Preview"}
+                            aria-label={isPreviewMode ? "Edit note" : "Preview note"}
+                            onClick={() => setIsPreviewMode((value) => !value)}
+                            icon={
+                                isPreviewMode ? (
+                                    <Pencil className="w-5 h-5" />
+                                ) : (
+                                    <Eye className="w-5 h-5" />
+                                )
+                            }
+                        />
 
-            <div
-              className={cn(
-                "flex-1 min-h-0 transition-all rounded-2xl overflow-hidden ring-1",
-                errors?.content ? "ring-error" : "ring-outline"
-              )}
-            >
-              <MdEditor
-                key={`editor-${resolvedTheme}-${isPreviewEnabled}`}
-                value={content}
-                onChange={setContent}
-                theme={resolvedTheme}
-                language="en-US"
-                className="h-full! bg-background! prose edge-note-editor"
-                preview={isPreviewEnabled}
-                noPrettier={false}
-                noUploadImg={true}
-                inputBoxWidth="60%"
-                toolbarsExclude={["github"]}
-                codeTheme="github"
-                previewTheme="github"
-                codeMirrorExtensions={codeMirrorExtensions}
-                onSave={handleSave}
-              />
-            </div>
+                        <Link
+                            to={backLink}
+                            className="hidden md:block"
+                            viewTransition
+                            tabIndex={-1}
+                        >
+                            <Button variant="text">Cancel</Button>
+                        </Link>
 
-            {errors?.content && (
-              <p className="mt-2 text-xs text-error ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
-                {errors.content}
-              </p>
-            )}
-          </div>
-        </Form>
-      </main>
-    </div>
-  );
+                        <Button
+                            form={formId}
+                            type="submit"
+                            disabled={isSubmitting}
+                            variant="filled"
+                            icon={
+                                isSubmitting ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Save className="w-4 h-4" />
+                                )
+                            }
+                        >
+                            Save
+                        </Button>
+
+                        <ThemeToggle />
+                    </div>
+                }
+            />
+
+            <main className="flex-1 w-full pb-4 md:pb-6 max-w-7xl mx-auto overflow-hidden flex flex-col">
+                <Form
+                    method="post"
+                    id={formId}
+                    className="flex flex-col gap-6 h-full"
+                >
+                    <NoteMetadataEditor
+                        title={initialTitle}
+                        isPublic={isPublic}
+                        slug={initialSlug}
+                        errors={errors}
+                        onIsPublicChange={setIsPublic}
+                    />
+
+                    <div className="flex-1 min-h-0 overflow-hidden px-4 py-1.5 mb-2 flex flex-col">
+                        <div
+                            className={cn(
+                                "flex-1 min-h-0 transition-all rounded-2xl overflow-hidden ring-1 bg-background",
+                                errors?.content ? "ring-error" : "ring-outline"
+                            )}
+                        >
+                            {isPreviewMode ? (
+                                <div className="h-full overflow-auto">
+                                    <MdPreview
+                                        modelValue={content}
+                                        theme={resolvedTheme}
+                                        language="en-US"
+                                        codeTheme="github"
+                                        previewTheme="github"
+                                        className="min-h-full bg-background! prose"
+                                    />
+                                </div>
+                            ) : (
+                                <textarea
+                                    name="content"
+                                    value={content}
+                                    onChange={(event) =>
+                                        setContent(event.target.value)
+                                    }
+                                    onKeyDown={handleEditorKeyDown}
+                                    wrap="soft"
+                                    spellCheck={false}
+                                    autoCapitalize="off"
+                                    autoCorrect="off"
+                                    className={cn(
+                                        "block h-full w-full resize-none overflow-auto",
+                                        "bg-background text-on-background",
+                                        "px-4 py-4 md:px-5 md:py-5",
+                                        "font-mono text-base leading-7",
+                                        "border-0 outline-none focus:outline-none",
+                                        "whitespace-pre-wrap break-words [overflow-wrap:anywhere]",
+                                        "[word-break:break-word] [text-overflow:clip]"
+                                    )}
+                                    aria-label="Note content"
+                                />
+                            )}
+                        </div>
+
+                        {errors?.content && (
+                            <p className="mt-2 text-xs text-error ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                                {errors.content}
+                            </p>
+                        )}
+                    </div>
+                </Form>
+            </main>
+        </div>
+    );
 }
