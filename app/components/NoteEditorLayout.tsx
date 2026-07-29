@@ -136,6 +136,7 @@ export function NoteEditorLayout({
                                 previewTheme="github"
                                 preview
                                 className="h-full bg-background!"
+                                style={{ height: "100%" }}
                             />
                         </div>
 
