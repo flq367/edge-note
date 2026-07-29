@@ -146,7 +146,7 @@ export const NoteCard = React.memo(function NoteCard({
             type="button"
             id={`note-card-${note.id}`}
             className={cn(
-                "group relative flex flex-col p-5 h-56 transition-all duration-300 rounded-3xl cursor-pointer overflow-hidden touch-manipulation select-none touch-callout-none text-left",
+                "group relative flex flex-col p-4 h-44 transition-all duration-300 rounded-2xl cursor-pointer overflow-hidden touch-manipulation select-none touch-callout-none text-left",
                 "note-card transition-shadow duration-200",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                 selected
@@ -165,8 +165,8 @@ export const NoteCard = React.memo(function NoteCard({
             onTouchMove={handleTouchMove}
             onTouchCancel={handleTouchCancel}
         >
-            <div className="flex justify-between items-start mb-3 gap-2">
-                <h3 className={cn("font-bold text-lg leading-snug line-clamp-2 transition-colors font-sans tracking-tight", selected ? "text-on-secondary-container" : "text-on-surface")}>
+            <div className="flex justify-between items-start mb-2 gap-2">
+                <h3 className={cn("font-bold text-base leading-snug line-clamp-1 transition-colors font-sans tracking-tight", selected ? "text-on-secondary-container" : "text-on-surface")}>
                     {note.title}
                 </h3>
                 {selected && (
@@ -178,11 +178,11 @@ export const NoteCard = React.memo(function NoteCard({
                 )}
             </div>
 
-            <p className={cn("text-base leading-relaxed line-clamp-4 grow font-normal", selected ? "text-on-secondary-container/80" : "text-on-surface-variant")}>
+            <p className={cn("text-sm leading-6 line-clamp-2 grow font-normal", selected ? "text-on-secondary-container/80" : "text-on-surface-variant")}>
                 {note.excerpt || "No additional text"}
             </p>
 
-            <div className="mt-auto flex items-center justify-between pt-4">
+            <div className="mt-auto flex items-center justify-between pt-3">
                 <span className={cn("text-xs font-medium px-2.5 py-1 rounded-lg tracking-wide", selected ? "bg-primary/10 text-primary" : "bg-surface-container text-on-surface-variant")}>
                     {formattedDate}
                 </span>
