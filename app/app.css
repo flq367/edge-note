@@ -746,3 +746,59 @@ textarea[aria-label="Note content"] {
     text-overflow: clip !important;
   }
 }
+
+/* =========================================================
+   Mobile editor and code-block scrollbar refinements
+   ========================================================= */
+@media (max-width: 640px) {
+  /* CSS fallback: mobile editing always shows only the Markdown source pane.
+     This also prevents the rendered pane flashing before React detects width. */
+  .edge-note-editor .md-editor-preview-wrapper,
+  .edge-note-editor .md-editor-resize-operate {
+    display: none !important;
+  }
+
+  .edge-note-editor .md-editor-content,
+  .edge-note-editor .md-editor-input-wrapper,
+  .edge-note-editor .md-editor-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  /* Rendered Markdown code-block horizontal scrollbar.
+     Reduce bottom padding so the bar sits closer to the code. */
+  .md-editor-preview .md-editor-code > pre,
+  .md-editor-preview-wrapper .md-editor-code > pre,
+  .prose .md-editor-code > pre,
+  .prose pre {
+    padding-bottom: 0.2rem !important;
+    scroll-padding-bottom: 0.2rem !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-outline) transparent;
+  }
+
+  .md-editor-preview .md-editor-code > pre::-webkit-scrollbar,
+  .md-editor-preview-wrapper .md-editor-code > pre::-webkit-scrollbar,
+  .prose .md-editor-code > pre::-webkit-scrollbar,
+  .prose pre::-webkit-scrollbar {
+    height: 7px;
+  }
+
+  .md-editor-preview .md-editor-code > pre::-webkit-scrollbar-track,
+  .md-editor-preview-wrapper .md-editor-code > pre::-webkit-scrollbar-track,
+  .prose .md-editor-code > pre::-webkit-scrollbar-track,
+  .prose pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .md-editor-preview .md-editor-code > pre::-webkit-scrollbar-thumb,
+  .md-editor-preview-wrapper .md-editor-code > pre::-webkit-scrollbar-thumb,
+  .prose .md-editor-code > pre::-webkit-scrollbar-thumb,
+  .prose pre::-webkit-scrollbar-thumb {
+    background-color: var(--color-outline) !important;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+}
