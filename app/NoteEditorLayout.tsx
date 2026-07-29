@@ -42,9 +42,8 @@ export function NoteEditorLayout({
     const [content, setContent] = useState(initialContent);
     const [isPublic, setIsPublic] = useState(initialIsPublic);
 
-    // null 表示尚未完成客户端屏幕宽度检测。
-    // 检测完成前先关闭预览，避免移动端首次加载时短暂显示右侧 Markdown 渲染区。
-    const [isMobile, setIsMobile] = useState<boolean | null>(null);
+    // 服务端渲染时默认按桌面端处理；客户端挂载后立即根据屏幕宽度更新。
+    const [isMobile, setIsMobile] = useState(false);
 
     const resolvedTheme = useResolvedTheme();
     const submit = useSubmit();
@@ -152,13 +151,10 @@ export function NoteEditorLayout({
                                 language="en-US"
                                 codeTheme="github"
                                 previewTheme="github"
-                                // 移动端仅显示左侧 Markdown 源码编辑区。
-                                // 尚未检测屏幕宽度时也先关闭预览，避免移动端闪现右侧预览。
-                                preview={isMobile === false}
-                                // MdEditor 即使关闭 preview，也可能保留原来的 50% 输入区宽度。
-                                // 移动端显式将源码输入区设为 100%，彻底取消右侧空白预览列。
-                                inputBoxWidth={isMobile === false ? "50%" : "100%"}
-                                // 移动端隐藏工具栏中的“预览”按钮，避免误切回双栏布局。
+                                // 移动端关闭预览后，MdEditor 会使用原生单栏源码布局。
+                                // 不再设置 inputBoxWidth，避免和组件内部布局发生冲突。
+                                preview={!isMobile}
+                                // 移动端隐藏工具栏中的预览按钮，避免误切回双栏。
                                 toolbarsExclude={isMobile ? ["preview"] : []}
                                 className="edge-note-editor h-full bg-background!"
                                 style={{ height: "100%" }}
