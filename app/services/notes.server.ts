@@ -1,4 +1,4 @@
-import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import { notes } from "../drizzle/schema";
 
 export async function getNotesList(
@@ -29,7 +29,7 @@ export async function getNotesList(
     .$dynamic();
   let countQuery = db.select({ value: count() }).from(notes).$dynamic();
 
-  const conditions = [];
+  const conditions = [isNull(notes.deletedAt)];
 
   if (q) {
     conditions.push(
@@ -37,7 +37,7 @@ export async function getNotesList(
         like(notes.title, `%${q}%`),
         like(notes.content, `%${q}%`),
         like(notes.slug, `%${q}%`)
-      )
+      )!
     );
   }
 
@@ -47,11 +47,9 @@ export async function getNotesList(
     conditions.push(eq(notes.isPublic, false));
   }
 
-  if (conditions.length > 0) {
-    const combined = conditions.length > 1 ? and(...conditions) : conditions[0];
-    query = query.where(combined!);
-    countQuery = countQuery.where(combined!);
-  }
+  const combined = conditions.length > 1 ? and(...conditions) : conditions[0];
+  query = query.where(combined!);
+  countQuery = countQuery.where(combined!);
 
   const [resultNotes, totalCountResult] = await Promise.all([
     query

@@ -55,7 +55,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   if (intent === "delete_batch") {
     if (numberIds.length > 0) {
-      await db.delete(notes).where(
+      await db.update(notes).set({ deletedAt: new Date(), isPinned: false, isPublic: false }).where(
         sql`id IN (SELECT value FROM json_each(${JSON.stringify(numberIds)}))`
       );
     }
@@ -160,13 +160,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     } else if (fetcher.data.operation === "unpin") {
       showSnackbar("Notes unpinned successfully");
     } else if (fetcher.data.operation === "delete") {
-      showSnackbar("Notes deleted successfully");
+      showSnackbar("Notes moved to recycle bin");
     }
   }, [fetcher.data, showSnackbar]);
 
   useEffect(() => {
     if (searchParams.has("deleted")) {
-      showSnackbar("Note deleted successfully");
+      showSnackbar("Note moved to recycle bin");
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         next.delete("deleted");
@@ -203,8 +203,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const handleDelete = () => {
     showModal({
       title: `Delete ${selectedIds.size} notes?`,
-      description: `Are you sure you want to delete these ${selectedIds.size} notes? This action cannot be undone.`,
-      confirmText: "Delete",
+      description: `Move these ${selectedIds.size} notes to the recycle bin? They will remain there until you restore or permanently delete them.`,
+      confirmText: "Move to recycle bin",
       isDestructive: true,
       icon: <Trash2 className="w-6 h-6" />,
       onConfirm: () => {

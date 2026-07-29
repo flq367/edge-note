@@ -1,4 +1,4 @@
-import { Globe, LayoutGrid, Lock, LogOut, Pen } from "lucide-react";
+import { Globe, LayoutGrid, Lock, LogOut, Pen, Trash2 } from "lucide-react";
 import { Form, Link } from "react-router";
 import { cn } from "~/lib/utils";
 import { APP_CONFIG } from "~/config";
@@ -16,13 +16,7 @@ interface HomeHeaderProps {
     onSearchClear: () => void;
 }
 
-export function HomeHeader({
-    isVisible,
-    totalNotes,
-    q,
-    onSearchChange,
-    onSearchClear
-}: HomeHeaderProps) {
+export function HomeHeader({ isVisible, totalNotes, q, onSearchChange, onSearchClear }: HomeHeaderProps) {
     return (
         <div className={cn(
             "absolute inset-0 transition-all duration-300 ease-in-out",
@@ -48,24 +42,17 @@ export function HomeHeader({
                     <div className="flex items-center gap-2">
                         <div className="hidden md:flex items-center gap-3 mr-2">
                             <Link to="/new" viewTransition tabIndex={-1}>
-                                <Button
-                                    variant="tonal"
-                                    className="rounded-xl h-11 px-4 flex items-center gap-2 font-medium"
-                                    icon={<Pen className="w-5 h-5" />}
-                                >
+                                <Button variant="tonal" className="rounded-xl h-11 px-4 flex items-center gap-2 font-medium" icon={<Pen className="w-5 h-5" />}>
                                     New
                                 </Button>
                             </Link>
                             <div className="w-64 lg:w-80">
-                                <SearchBar
-                                    name="q"
-                                    value={q}
-                                    placeholder="Search your notes"
-                                    onChange={onSearchChange}
-                                    onClear={onSearchClear}
-                                />
+                                <SearchBar name="q" value={q} placeholder="Search your notes" onChange={onSearchChange} onClear={onSearchClear} />
                             </div>
                         </div>
+                        <Link to="/trash" viewTransition tabIndex={-1}>
+                            <Button variant="icon" icon={<Trash2 className="w-5 h-5" />} title="Recycle bin" aria-label="Recycle bin" />
+                        </Link>
                         <ThemeToggle />
                         <Form action="/logout" method="post">
                             <Button variant="icon" icon={<LogOut className="w-5 h-5" />} title="Logout" />
@@ -85,29 +72,14 @@ interface FiltersProps {
     onPrivacyChange: (value: string) => void;
 }
 
-HomeHeader.Filters = function HomeHeaderFilters({
-    q,
-    onSearchChange,
-    onSearchClear,
-    privacy,
-    onPrivacyChange
-}: FiltersProps) {
+HomeHeader.Filters = function HomeHeaderFilters({ q, onSearchChange, onSearchClear, privacy, onPrivacyChange }: FiltersProps) {
     return (
         <div className="max-w-7xl mx-auto w-full px-4 md:px-6 pt-4 md:pt-6 flex flex-col md:flex-row md:items-center md:justify-end gap-4">
-            {/* Mobile Search */}
             <div className="md:hidden w-full">
                 <Form method="get" action="/">
-                    <SearchBar
-                        className="h-14"
-                        name="q"
-                        value={q}
-                        placeholder="Search notes"
-                        onChange={onSearchChange}
-                        onClear={onSearchClear}
-                    />
+                    <SearchBar className="h-14" name="q" value={q} placeholder="Search notes" onChange={onSearchChange} onClear={onSearchClear} />
                 </Form>
             </div>
-
             <SegmentedButton
                 value={privacy}
                 onChange={onPrivacyChange}
