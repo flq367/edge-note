@@ -613,30 +613,33 @@ body {
 }
 
 
-/* Editor fix: show long URLs and code in full instead of ellipsis. */
-.cm-editor .cm-scroller {
+/* Editor: render long URLs and long code in full on narrow screens. */
+.edge-note-editor .cm-editor,
+.edge-note-editor .cm-scroller,
+.edge-note-editor .cm-content {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.edge-note-editor .cm-scroller {
   overflow-x: hidden !important;
 }
 
-.cm-editor .cm-content,
-.cm-editor .cm-line {
-  max-width: 100% !important;
-  white-space: pre-wrap !important;
+/* EditorView.lineWrapping sets white-space, while these rules make strings
+   without natural break points (URLs, hashes, commands) break safely. */
+.edge-note-editor .cm-content,
+.edge-note-editor .cm-line {
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
   text-overflow: clip !important;
 }
 
-.cm-editor .cm-line {
-  overflow: visible !important;
-  min-width: 0 !important;
-}
-
-/* Prevent long inline URLs/code from widening or covering nearby content. */
-.md-editor-input-wrapper,
-.md-editor-content,
-.cm-editor,
-.cm-editor .cm-scroller {
+.edge-note-editor .cm-line {
   min-width: 0 !important;
   max-width: 100% !important;
+}
+
+/* Never display CodeMirror's folded placeholder as an unexplained ellipsis. */
+.edge-note-editor .cm-foldPlaceholder {
+  display: none !important;
 }
