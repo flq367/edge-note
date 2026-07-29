@@ -178,19 +178,7 @@ export const NoteCard = React.memo(function NoteCard({
                 )}
             </div>
 
-            <p
-              className={cn(
-                "text-sm leading-6 grow font-normal overflow-hidden",
-                selected
-                  ? "text-on-secondary-container/80"
-                  : "text-on-surface-variant"
-              )}
-              style={{
-                display: "-webkit-box",
-                WebkitBoxOrient: "vertical",
-                WebkitLineClamp: 2,
-              }}
-            >
+            <p className={cn("text-sm leading-6 line-clamp-2 grow font-normal", selected ? "text-on-secondary-container/80" : "text-on-surface-variant")}>
                 {note.excerpt || "No additional text"}
             </p>
 
