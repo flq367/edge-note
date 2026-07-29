@@ -599,8 +599,8 @@ body {
   .prose pre {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 0.15rem !important;
-    scroll-padding-bottom: 0.15rem;
+    padding-bottom: 0.05rem !important;
+    scroll-padding-bottom: 0.05rem;
   }
 
   .md-editor-preview .md-editor-code code,
