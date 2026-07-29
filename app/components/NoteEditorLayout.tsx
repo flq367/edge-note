@@ -62,7 +62,6 @@ export function NoteEditorLayout({
 
         updateMobileState();
         mediaQuery.addEventListener("change", updateMobileState);
-
         return () => {
             mediaQuery.removeEventListener("change", updateMobileState);
         };
@@ -97,7 +96,6 @@ export function NoteEditorLayout({
                         >
                             <Button variant="text">Cancel</Button>
                         </Link>
-
                         <Button
                             form={formId}
                             type="submit"
@@ -113,12 +111,10 @@ export function NoteEditorLayout({
                         >
                             Save
                         </Button>
-
                         <ThemeToggle />
                     </div>
                 }
             />
-
             <main className="flex-1 w-full pb-4 md:pb-6 max-w-7xl mx-auto overflow-hidden flex flex-col">
                 <Form
                     method="post"
@@ -132,9 +128,7 @@ export function NoteEditorLayout({
                         errors={errors}
                         onIsPublicChange={setIsPublic}
                     />
-
                     <input type="hidden" name="content" value={content} />
-
                     <div className="flex-1 min-h-0 overflow-hidden px-4 py-1.5 mb-2 flex flex-col">
                         <div
                             className={cn(
@@ -151,11 +145,11 @@ export function NoteEditorLayout({
                                 codeTheme="github"
                                 previewTheme="github"
                                 preview={!isMobile}
+                                toolbarsExclude={isMobile ? ["preview"] : []}
                                 className="edge-note-editor h-full bg-background!"
                                 style={{ height: "100%" }}
                             />
                         </div>
-
                         {errors?.content && (
                             <p className="mt-2 text-xs text-error ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
                                 {errors.content}
