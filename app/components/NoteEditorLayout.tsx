@@ -41,6 +41,7 @@ export function NoteEditorLayout({
 }: NoteEditorLayoutProps) {
     const [content, setContent] = useState(initialContent);
     const [isPublic, setIsPublic] = useState(initialIsPublic);
+    const [isMobile, setIsMobile] = useState(false);
     const [isPreviewEnabled, setIsPreviewEnabled] = useState(true);
     const resolvedTheme = useResolvedTheme();
     const submit = useSubmit();
@@ -53,16 +54,19 @@ export function NoteEditorLayout({
     };
 
     useEffect(() => {
-        const checkMobile = () => {
-            setIsPreviewEnabled(window.innerWidth >= 768);
+        const checkViewport = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            setIsPreviewEnabled(!mobile);
         };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
+
+        checkViewport();
+        window.addEventListener("resize", checkViewport);
+        return () => window.removeEventListener("resize", checkViewport);
     }, []);
 
     const { showSnackbar } = useUI();
-    
+
     useEffect(() => {
         if (errors?.global) {
             showSnackbar(errors.global);
@@ -110,27 +114,50 @@ export function NoteEditorLayout({
 
                     <div className="flex-1 min-h-0 overflow-hidden px-4 py-1.5 mb-2 flex flex-col">
                         <input type="hidden" name="content" value={content} />
-                        <div className={cn(
-                            "flex-1 min-h-0 transition-all rounded-2xl overflow-hidden ring-1",
-                            errors?.content ? "ring-error" : "ring-outline"
-                        )}>
-                            <MdEditor
-                                key={`editor-${resolvedTheme}-${isPreviewEnabled}`}
-                                value={content}
-                                onChange={setContent}
-                                theme={resolvedTheme}
-                                language="en-US"
-                                className="h-full! bg-background! prose"
-                                preview={isPreviewEnabled}
-                                noPrettier={false}
-                                noUploadImg={true}
-                                inputBoxWidth="60%"
-                                toolbarsExclude={['github']}
-                                codeTheme="github"
-                                previewTheme="github"
-                                onSave={handleSave}
-                            />
+
+                        <div
+                            className={cn(
+                                "flex-1 min-h-0 transition-all rounded-2xl overflow-hidden ring-1",
+                                errors?.content ? "ring-error" : "ring-outline"
+                            )}
+                        >
+                            {isMobile ? (
+                                <textarea
+                                    value={content}
+                                    onChange={(event) => setContent(event.target.value)}
+                                    onKeyDown={(event) => {
+                                        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+                                            event.preventDefault();
+                                            handleSave();
+                                        }
+                                    }}
+                                    spellCheck={false}
+                                    autoCapitalize="off"
+                                    autoCorrect="off"
+                                    wrap="soft"
+                                    aria-label="Note content"
+                                    className="block h-full w-full resize-none overflow-y-auto bg-background px-4 py-3 font-mono text-base leading-7 text-on-background outline-none whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                                />
+                            ) : (
+                                <MdEditor
+                                    key={`editor-${resolvedTheme}-${isPreviewEnabled}`}
+                                    value={content}
+                                    onChange={setContent}
+                                    theme={resolvedTheme}
+                                    language="en-US"
+                                    className="h-full! bg-background! prose"
+                                    preview={isPreviewEnabled}
+                                    noPrettier={false}
+                                    noUploadImg={true}
+                                    inputBoxWidth="60%"
+                                    toolbarsExclude={["github"]}
+                                    codeTheme="github"
+                                    previewTheme="github"
+                                    onSave={handleSave}
+                                />
+                            )}
                         </div>
+
                         {errors?.content && (
                             <p className="mt-2 text-xs text-error ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
                                 {errors.content}
