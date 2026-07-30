@@ -7,7 +7,6 @@ import { NoteListErrorState } from './NoteListErrorState';
 import { NoteListSkeleton } from './NoteListSkeleton';
 
 type SelectionResult = ReturnType<typeof useSelectionMode>;
-
 interface NoteListProps {
     notes: Note[];
     hasMore: boolean;
@@ -18,7 +17,6 @@ interface NoteListProps {
     onLoadMore: (newNotes: Note[], hasMore: boolean, nextOffset: number) => void;
     children?: React.ReactNode;
 }
-
 export function NoteList({
     notes,
     hasMore,
@@ -33,7 +31,6 @@ export function NoteList({
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState(false);
     const sentinelRef = useRef<HTMLDivElement>(null);
-
     const {
         isSelectionMode,
         selectedIds,
@@ -48,7 +45,6 @@ export function NoteList({
 
         setIsLoading(true);
         setIsError(false);
-
         try {
             const params = new URLSearchParams();
             const currentQ = new URLSearchParams(window.location.search).get("q");
@@ -56,7 +52,6 @@ export function NoteList({
             if (currentQ) params.set("q", currentQ);
             if (currentPrivacy) params.set("privacy", currentPrivacy);
             params.set("offset", offset.toString());
-
             const res = await fetch(`/api-notes?${params.toString()}`);
             if (!res.ok) throw new Error("Failed to fetch");
 
@@ -65,7 +60,6 @@ export function NoteList({
                 hasMore: boolean;
                 nextOffset: number;
             };
-
             if (data.notes) {
                 onLoadMore(data.notes, data.hasMore, data.nextOffset);
             }
@@ -80,7 +74,6 @@ export function NoteList({
     // Intersection Observer for Infinite Scroll
     useEffect(() => {
         if (!hasMore || isLoading || isError) return;
-
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting) {
@@ -92,7 +85,6 @@ export function NoteList({
 
         const currentSentinel = sentinelRef.current;
         if (currentSentinel) observer.observe(currentSentinel);
-
         return () => {
             if (currentSentinel) observer.unobserve(currentSentinel);
         };
@@ -105,7 +97,6 @@ export function NoteList({
             navigate(`/${note.id}`, { viewTransition: true });
         }
     }, [isSelectionMode, toggleSelection, navigate]);
-
     const handleNoteLongPress = useCallback((note: Note) => {
         if (!isSelectionMode) {
             startSelectionMode(note.id.toString());
@@ -113,7 +104,6 @@ export function NoteList({
             toggleSelection(note.id.toString());
         }
     }, [isSelectionMode, startSelectionMode, toggleSelection]);
-
     return (
         <div className="flex flex-col h-full w-full bg-background text-on-background relative">
             <div
@@ -122,8 +112,7 @@ export function NoteList({
                 onMouseDown={handleMouseDown}
             >
                 {children}
-
-                <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 p-4 md:p-6 pb-24">
+                <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 p-4 md:p-6 pb-24">
                     {notes.map((note) => (
                         <NoteCard
                             key={note.id}
@@ -133,11 +122,9 @@ export function NoteList({
                             selected={selectedIds.has(note.id.toString())}
                         />
                     ))}
-
                     {notes.length === 0 && !isLoading && !isError && (
                         <NoteListEmptyState />
                     )}
-
                     {/* Sentinel / Footer Area */}
                     {(hasMore || isError) && (
                         <div ref={sentinelRef} className="col-span-full pb-8 pt-0 flex flex-col items-center justify-center min-h-25">
@@ -148,7 +135,6 @@ export function NoteList({
                         </div>
                     )}
                 </div>
-
                 {/* Selection Box */}
                 {selectionBox && (
                     <div
