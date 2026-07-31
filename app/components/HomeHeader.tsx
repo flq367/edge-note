@@ -1,4 +1,4 @@
-import { Globe, LayoutGrid, Lock, LogOut, Pen, Trash2 } from "lucide-react";
+import { Globe, Home, LayoutGrid, Lock, LogOut, Pen, Trash2 } from "lucide-react";
 import { Form, Link } from "react-router";
 import { cn } from "~/lib/utils";
 import { APP_CONFIG } from "~/config";
@@ -54,6 +54,14 @@ export function HomeHeader({ isVisible, totalNotes, q, onSearchChange, onSearchC
                             <Button variant="icon" icon={<Trash2 className="w-5 h-5" />} title="Recycle bin" aria-label="Recycle bin" />
                         </Link>
                         <ThemeToggle />
+                        <a href="https://edge-note.xy95.de" tabIndex={-1}>
+                            <Button
+                                variant="icon"
+                                icon={<Home className="w-5 h-5" />}
+                                title="返回主页"
+                                aria-label="返回主页"
+                            />
+                        </a>
                         <Form action="/logout" method="post">
                             <Button variant="icon" icon={<LogOut className="w-5 h-5" />} title="Logout" />
                         </Form>
