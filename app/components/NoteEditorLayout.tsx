@@ -1,4 +1,4 @@
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Home, Loader2, Save } from "lucide-react";
 import { MdEditor } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
 import { useEffect, useState } from "react";
@@ -41,17 +41,27 @@ export function NoteEditorLayout({
 }: NoteEditorLayoutProps) {
     const [content, setContent] = useState(initialContent);
     const [isPublic, setIsPublic] = useState(initialIsPublic);
-
+    const [isPreviewEnabled, setIsPreviewEnabled] = useState(true);
     const resolvedTheme = useResolvedTheme();
     const submit = useSubmit();
-    const { showSnackbar } = useUI();
 
     const handleSave = () => {
-        const form = document.getElementById(formId) as HTMLFormElement | null;
+        const form = document.getElementById(formId) as HTMLFormElement;
         if (form) {
             submit(form);
         }
     };
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsPreviewEnabled(window.innerWidth >= 768);
+        };
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
+    const { showSnackbar } = useUI();
 
     useEffect(() => {
         if (errors?.global) {
@@ -66,20 +76,12 @@ export function NoteEditorLayout({
                 title={title}
                 startAction={
                     <Link to={backLink} viewTransition tabIndex={-1}>
-                        <Button
-                            variant="icon"
-                            icon={<ArrowLeft className="w-6 h-6" />}
-                        />
+                        <Button variant="icon" icon={<ArrowLeft className="w-6 h-6" />} />
                     </Link>
                 }
                 endAction={
                     <div className="flex items-center gap-2 pe-2">
-                        <Link
-                            to={backLink}
-                            className="hidden md:block"
-                            viewTransition
-                            tabIndex={-1}
-                        >
+                        <Link to={backLink} className="hidden md:block" viewTransition tabIndex={-1}>
                             <Button variant="text">Cancel</Button>
                         </Link>
                         <Button
@@ -87,27 +89,24 @@ export function NoteEditorLayout({
                             type="submit"
                             disabled={isSubmitting}
                             variant="filled"
-                            icon={
-                                isSubmitting ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Save className="w-4 h-4" />
-                                )
-                            }
+                            icon={isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         >
                             Save
                         </Button>
                         <ThemeToggle />
+                        <a href="https://edge-note.xy95.de" tabIndex={-1}>
+                            <Button
+                                variant="icon"
+                                icon={<Home className="w-5 h-5" />}
+                                title="返回主页"
+                                aria-label="返回主页"
+                            />
+                        </a>
                     </div>
                 }
             />
-
             <main className="flex-1 w-full pb-4 md:pb-6 max-w-7xl mx-auto overflow-hidden flex flex-col">
-                <Form
-                    method="post"
-                    id={formId}
-                    className="flex flex-col gap-6 h-full"
-                >
+                <Form method="post" id={formId} className="flex flex-col gap-6 h-full">
                     <NoteMetadataEditor
                         title={initialTitle}
                         isPublic={isPublic}
@@ -115,29 +114,29 @@ export function NoteEditorLayout({
                         errors={errors}
                         onIsPublicChange={setIsPublic}
                     />
-
-                    <input type="hidden" name="content" value={content} />
-
                     <div className="flex-1 min-h-0 overflow-hidden px-4 py-1.5 mb-2 flex flex-col">
-                        <div
-                            className={cn(
-                                "flex-1 min-h-0 transition-all rounded-2xl overflow-hidden ring-1 bg-background",
-                                errors?.content ? "ring-error" : "ring-outline"
-                            )}
-                        >
+                        <input type="hidden" name="content" value={content} />
+                        <div className={cn(
+                            "flex-1 min-h-0 transition-all rounded-2xl overflow-hidden ring-1",
+                            errors?.content ? "ring-error" : "ring-outline"
+                        )}>
                             <MdEditor
-                                modelValue={content}
+                                key={`editor-${resolvedTheme}-${isPreviewEnabled}`}
+                                value={content}
                                 onChange={setContent}
-                                onSave={handleSave}
                                 theme={resolvedTheme}
                                 language="en-US"
+                                className="h-full! bg-background! prose"
+                                preview={isPreviewEnabled}
+                                noPrettier={false}
+                                noUploadImg={true}
+                                inputBoxWidth="60%"
+                                toolbarsExclude={["github"]}
                                 codeTheme="github"
                                 previewTheme="github"
-                                className="edge-note-editor h-full bg-background!"
-                                style={{ height: "100%" }}
+                                onSave={handleSave}
                             />
                         </div>
-
                         {errors?.content && (
                             <p className="mt-2 text-xs text-error ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
                                 {errors.content}

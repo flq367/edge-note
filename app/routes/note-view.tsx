@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { ArrowLeft, Copy, ExternalLink, Globe, Lock, MoreVertical, Pen, Trash2, FileText } from "lucide-react";
+import { ArrowLeft, Copy, ExternalLink, FileText, Globe, Home, Lock, MoreVertical, Pen, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { data, Link, redirect, useSubmit } from "react-router";
 import { NotePublicViewer } from "../components/NotePublicViewer";
@@ -41,7 +41,6 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     if (!note) {
         throw new Response("Not Found", { status: 404 });
     }
-
     return { note };
 }
 
@@ -79,7 +78,7 @@ export default function NoteView({ loaderData }: Route.ComponentProps) {
                 submit(formData, { method: "post" });
             }
         });
-    }
+    };
 
     const publicUrl = note.slug ? `/s/${note.slug}` : "";
 
@@ -87,11 +86,11 @@ export default function NoteView({ loaderData }: Route.ComponentProps) {
         const fullUrl = `${window.location.origin}${publicUrl}`;
         navigator.clipboard.writeText(fullUrl);
         showSnackbar("Link copied to clipboard");
-    }
+    };
 
     const handleOpenLink = () => {
-        window.open(publicUrl, '_blank');
-    }
+        window.open(publicUrl, "_blank");
+    };
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -107,7 +106,6 @@ export default function NoteView({ loaderData }: Route.ComponentProps) {
                 }
                 endAction={
                     <div className="flex items-center gap-2">
-                        {/* Desktop Actions */}
                         <div className="hidden md:flex items-center gap-2">
                             {note.slug && (
                                 <ButtonGroup className="mr-2">
@@ -133,7 +131,7 @@ export default function NoteView({ loaderData }: Route.ComponentProps) {
                                         variant="icon"
                                         icon={<FileText className="w-4 h-4" />}
                                         title="View Raw"
-                                        onClick={() => window.open(`/raw/s/${note.slug}`, '_blank')}
+                                        onClick={() => window.open(`/raw/s/${note.slug}`, "_blank")}
                                         className="px-6!"
                                     />
                                 </ButtonGroup>
@@ -146,7 +144,15 @@ export default function NoteView({ loaderData }: Route.ComponentProps) {
 
                         <ThemeToggle />
 
-                        {/* Mobile Actions */}
+                        <a href="https://edge-note.xy95.de" tabIndex={-1}>
+                            <Button
+                                variant="icon"
+                                icon={<Home className="w-5 h-5" />}
+                                title="返回主页"
+                                aria-label="返回主页"
+                            />
+                        </a>
+
                         <div className="md:hidden">
                             <Link to={`/${note.id}/edit`} viewTransition>
                                 <Button variant="icon" icon={<Pen className="w-5 h-5" />} />
@@ -164,7 +170,7 @@ export default function NoteView({ loaderData }: Route.ComponentProps) {
                                                 </DropdownItem>
                                             </>
                                         )}
-                                        <DropdownItem onClick={() => window.open(`/raw/s/${note.slug}`, '_blank')}>
+                                        <DropdownItem onClick={() => window.open(`/raw/s/${note.slug}`, "_blank")}>
                                             <FileText className="w-4 h-4 mr-2" /> View Raw
                                         </DropdownItem>
                                         <div className="h-px bg-outline-variant/30 my-1 mx-2" />
@@ -179,7 +185,6 @@ export default function NoteView({ loaderData }: Route.ComponentProps) {
                 }
             />
 
-            {/* Metadata Bar */}
             <div className="w-full max-w-5xl mx-auto px-6 md:px-8 pt-6 flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] font-medium animate-in fade-in slide-in-from-top-2 duration-500">
                 <div className="flex items-center gap-2.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
